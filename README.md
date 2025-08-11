@@ -31,7 +31,7 @@ docker compose up --build
 # Frontend: http://localhost:3000
 ```
 
-> ⚠️ Don’t commit model weights. Use `.env` → `MODEL_WEIGHTS=yolov8n.pt` (or point to your own file).
+> Don’t commit model weights. Use `.env` → `MODEL_WEIGHTS=yolov8n.pt` (or point to your own file).
 
 ### Option B — Local setup
 
@@ -134,10 +134,6 @@ DETECTOR=auto
 MODEL_WEIGHTS=yolov8n.pt
 SECRET_KEY=change-me
 ```
-
-- The UI can override `detector` via query parameter.
-- History is stored in `uploads/history.jsonl` (JSON Lines).
-
 ---
 
 ## 🧰 Troubleshooting
@@ -149,6 +145,6 @@ SECRET_KEY=change-me
 
 ---
 
-## 📜 License
+## License
 
 MIT
