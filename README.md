@@ -147,4 +147,5 @@ SECRET_KEY=change-me
 
 ## License
 
-MIT
+This project is released under the MIT License. See [LICENSE](LICENSE) for details.
+
