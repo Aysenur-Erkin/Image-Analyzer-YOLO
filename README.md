@@ -2,10 +2,6 @@
 
 Image Analyzer is a small, production-shaped demo that lets you upload an image, run detection (YOLO or OpenCV Contour, with an Auto fallback), and get an annotated result plus per-box stats. The FastAPI backend handles inference, analytics, and a JSONL-based history (list/detail/delete), while the React UI lets you switch detectors and tweak confidence/max-detections.
 
----
-
-## Why this project?
-
 - Practical full‑stack demo: end‑to‑end flow (upload → process → output → history) with FastAPI + React.
 - Real‑world shape: file I/O, YOLO/Contour detection, annotated results, history & cleanup.
 - Clean architecture: clear layers (api / services / models / utils) — easy to extend.
