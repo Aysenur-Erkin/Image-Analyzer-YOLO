@@ -1,11 +1,22 @@
 # Image Analyzer (FastAPI + React + YOLO/Contour)
 
-Image Analyzer is a small, production-shaped demo that lets you upload an image, run detection (YOLO or OpenCV Contour, with an Auto fallback), and get an annotated result plus per-box stats. The FastAPI backend handles inference, analytics, and a JSONL-based history (list/detail/delete), while the React UI lets you switch detectors and tweak confidence/max-detections.
+### What is Image Analyzer?
+Upload a picture and get an instant result with boxes drawn around the detected objects. You also see simple stats for each box (size, a small brightness chart), and you can revisit or delete past uploads in History.
 
-- Practical full‑stack demo: end‑to‑end flow (upload → process → output → history) with FastAPI + React.
-- Real‑world shape: file I/O, YOLO/Contour detection, annotated results, history & cleanup.
-- Clean architecture: clear layers (api / services / models / utils) — easy to extend.
-- Safe defaults: CORS, .env, static serving, and diagnostics endpoints for quick debugging.
+### What do Frontend & Backend do?
+
+- Frontend (React): clean UI to upload images, choose detector (Auto / YOLO / Contour), adjust confidence & max detections, view results and history.
+
+- Backend (FastAPI): receives the image, runs detection, computes stats, draws boxes, saves files, and exposes simple APIs for analysis and history.
+
+### How are objects detected?
+
+- YOLO: a neural network trained on many labeled images that proposes boxes with names (e.g., “cat”) and confidence scores.
+
+- Contour: classic computer vision that finds prominent shapes by edges/contrast; fast and works without large models (great fallback in Auto mode).
+
+![Image Analyzer UI](ss.png)
+
 ---
 
 ## ⚙️ Installation
@@ -28,13 +39,8 @@ docker compose up --build
 ```bash
 cd Backend
 python -m venv .venv
-# Windows:
-.\.venv\Scripts\Activate.ps1
-# macOS/Linux:
-# source .venv/bin/activate
-
 pip install -r requirements.txt
-copy .env.example .env   # or: cp .env.example .env
+copy .env.example .env  
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
