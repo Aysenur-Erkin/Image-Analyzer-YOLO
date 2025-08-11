@@ -1,6 +1,6 @@
 # Image Analyzer (FastAPI + React + YOLO/Contour)
 
-### What is Image Analyzer?
+## What is Image Analyzer?
 Upload a picture and get an instant result with boxes drawn around the detected objects. You also see simple stats for each box (size, a small brightness chart), and you can revisit or delete past uploads in History.
 
 ### What do Frontend & Backend do?
