@@ -89,29 +89,19 @@ Swagger UI: **http://localhost:8000/docs**
 ## 🗂️ Project Structure
 
 ```plaintext
-image-analyzer/
+Image-Analyzer-YOLO/
 ├── Backend/
 │   ├── app/
 │   │   ├── api/
-│   │   │   └── v1/
-│   │   │       ├── endpoints.py
-│   │   │       └── schemas.py
-│   │   ├── core/
-│   │   │   └── config.py
-│   │   ├── models/
-│   │   │   └── detection.py
-│   │   ├── services/
-│   │   │   ├── inference.py
-│   │   │   └── analytics.py
-│   │   └── utils/
-│   │       ├── storage.py
-│   │       ├── visualize.py
-│   │       └── history.py
-│   ├── main.py
-│   ├── worker.py
-│   ├── requirements.txt
+│   │   │   └── v1/ (endpoints.py, schemas.py)
+│   │   ├── core/ (config.py)
+│   │   ├── models/ (detection.py)
+│   │   ├── services/ (inference.py, analytics.py)
+│   │   └── utils/ (storage.py, visualize.py, history.py)
+│   ├── tests/
 │   ├── Dockerfile
-│   └── uploads/            # static outputs 
+│   ├── requirements.txt
+│   └── uploads/               
 ├── Frontend/
 │   ├── src/
 │   │   ├── App.jsx
@@ -123,8 +113,10 @@ image-analyzer/
 │   ├── index.html
 │   ├── package.json
 │   ├── package-lock.json
-│   └── vite.config.js
-└── README.md
+│   └── vite.config.js                 
+├── docker-compose.yml        
+├── README.md
+└── LICENSE
 ```
 
 ---
