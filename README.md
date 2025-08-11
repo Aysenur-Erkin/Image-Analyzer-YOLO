@@ -12,7 +12,7 @@ Image Analyzer is a small, production-shaped demo that lets you upload an image,
 
 > You can run with **Docker** or **locally**. Pick one.
 
-### Option A — Docker (recommended)
+### Option A — Docker
 
 ```bash
 docker compose up --build
