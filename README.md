@@ -143,11 +143,6 @@ SECRET_KEY=change-me
 
 ---
 
-## 🤝 Contributing
-
-Issues and PRs are welcome — improvements, bug fixes, or new detectors.  
----
-
 ## 📜 License
 
 MIT
