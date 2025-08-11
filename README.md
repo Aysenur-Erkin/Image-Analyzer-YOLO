@@ -15,7 +15,7 @@ Upload a picture and get an instant result with boxes drawn around the detected 
 
 - Contour: classic computer vision that finds prominent shapes by edges/contrast; fast and works without large models (great fallback in Auto mode).
 
-![Image Analyzer UI](ss.png)
+![Image Analyzer UI](Image_Analyzer_UI.png)
 
 ---
 
