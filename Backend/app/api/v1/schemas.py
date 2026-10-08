@@ -1,8 +1,5 @@
 from typing import List, Optional
 from pydantic import BaseModel
-import logging
-
-logging.getLogger("uvicorn").info(f"[schemas] LOADED FROM: {__file__}")
 
 class ObjectInfo(BaseModel):
     label: str
@@ -16,22 +13,6 @@ class AnalyzeResponse(BaseModel):
     objects: List[ObjectInfo]
     annotated_url: Optional[str] = None
     history_id: Optional[str] = None
-
-class DebugVersion(BaseModel):
-    python: str
-    fastapi: Optional[str]
-    uvicorn: Optional[str]
-    numpy: Optional[str]
-    opencv: Optional[str]
-    torch: Optional[str]
-    ultralytics: Optional[str]
-    platform: str
-
-class DebugConfig(BaseModel):
-    detector: str
-    model_weights: str
-    upload_dir: str
-    cors_origins: List[str]
 
 class HistoryItem(BaseModel):
     id: str
