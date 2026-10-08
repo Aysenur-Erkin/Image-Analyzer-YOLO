@@ -27,7 +27,6 @@ Without Docker, backend:
 cd Backend
 python -m venv .venv
 pip install -r requirements.txt
-copy .env.example .env
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -94,7 +93,6 @@ UPLOAD_DIR=uploads
 CORS_ORIGINS=["http://localhost:3000"]
 DETECTOR=auto
 MODEL_WEIGHTS=yolov8n.pt
-SECRET_KEY=change-me
 ```
 
 ## If something fails
