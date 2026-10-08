@@ -7,7 +7,7 @@ class Detection(BaseModel):
     bbox: List[int]
 
 def _detect_contour(image_path: str) -> List[Detection]:
-    import cv2, numpy as np
+    import cv2
     img = cv2.imread(image_path)
     if img is None:
         return []
@@ -20,8 +20,9 @@ def _detect_contour(image_path: str) -> List[Detection]:
         x, y, w, h = cv2.boundingRect(c)
         if w * h < 100:
             continue
-        dets.append(Detection(label="blob", confidence=1.0, bbox=[int(x), int(y), int(x+w), int(y+h)]))
-    if not dets:
-        h, w = gray.shape[:2]
-        dets.append(Detection(label="blob", confidence=1.0, bbox=[0, 0, int(w), int(h)]))
+        dets.append(Detection(
+            label="blob",
+            confidence=1.0,
+            bbox=[int(x), int(y), int(x + w), int(y + h)],
+        ))
     return dets

@@ -1,4 +1,3 @@
-import os
 from typing import List, Optional
 from app.models.detection import Detection, _detect_contour
 from app.core.config import settings
@@ -11,14 +10,15 @@ def _detect_yolo(image_path: str, conf: float, max_dets: int) -> List[Detection]
     for r in results:
         if r.boxes is None:
             continue
-        names = r.names if hasattr(r, "names") else {}
+        names = r.names
         for b in r.boxes:
-            xyxy = b.xyxy[0].tolist()
-            x1, y1, x2, y2 = map(int, xyxy)
-            confv = float(b.conf[0]) if hasattr(b, "conf") else 1.0
-            cls_id = int(b.cls[0]) if hasattr(b, "cls") else 0
-            label = names.get(cls_id, f"id_{cls_id}")
-            dets.append(Detection(label=label, confidence=confv, bbox=[x1, y1, x2, y2]))
+            x1, y1, x2, y2 = map(int, b.xyxy[0].tolist())
+            cls_id = int(b.cls[0])
+            dets.append(Detection(
+                label=names.get(cls_id, f"id_{cls_id}"),
+                confidence=float(b.conf[0]),
+                bbox=[x1, y1, x2, y2],
+            ))
     return dets
 
 def run_inference(
@@ -38,5 +38,5 @@ def run_inference(
     try:
         return _detect_yolo(image_path, conf=conf, max_dets=max_dets)
     except Exception as e:
-        print(f"[inference] YOLO failed -> fallback to contour: {e}")
+        print(f"[inference] YOLO failed, using contour: {e}")
         return _detect_contour(image_path)
