@@ -21,14 +21,12 @@ from app.core.config import settings
 router = APIRouter()
 
 
-@router.post("/analyze", response_model=AnalyzeResponse, summary="Analyze an uploaded image")
+@router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_image(
     file: UploadFile = File(...),
-    conf: float = Query(0.25, ge=0.0, le=1.0, description="Minimum confidence"),
-    max_dets: int = Query(100, ge=1, le=3000, description="Max detections"),
-    detector: Optional[Literal["auto", "yolo", "contour"]] = Query(
-        None, description="Detection engine override (auto|yolo|contour)"
-    ),
+    conf: float = Query(0.25, ge=0.0, le=1.0),
+    max_dets: int = Query(100, ge=1, le=3000),
+    detector: Optional[Literal["auto", "yolo", "contour"]] = Query(None),
 ) -> AnalyzeResponse:
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Invalid file type")
@@ -77,26 +75,26 @@ async def analyze_image(
     )
 
 
-@router.get("/history", response_model=HistoryList, summary="List recent uploads")
+@router.get("/history", response_model=HistoryList)
 async def history_list(limit: int = Query(20, ge=1, le=200)) -> HistoryList:
     items = list_history(limit=limit)
     return HistoryList(items=[HistoryItem(**it) for it in items])
 
-@router.get("/history/{hid}", response_model=HistoryItem, summary="Get a single upload by id")
+@router.get("/history/{hid}", response_model=HistoryItem)
 async def history_detail(hid: str) -> HistoryItem:
     item = get_history_by_id(hid)
     if not item:
         raise HTTPException(status_code=404, detail="history item not found")
     return HistoryItem(**item)
 
-@router.delete("/history/{hid}", response_model=HistoryItem, summary="Delete one history item & its files")
+@router.delete("/history/{hid}", response_model=HistoryItem)
 async def history_delete_one(hid: str) -> HistoryItem:
     item = delete_history_item(hid)
     if not item:
         raise HTTPException(status_code=404, detail="history item not found")
     return HistoryItem(**item)
 
-@router.delete("/history", response_model=BulkDeleteResult, summary="Clear all history & files")
+@router.delete("/history", response_model=BulkDeleteResult)
 async def history_clear_all() -> BulkDeleteResult:
     n = clear_history()
     return BulkDeleteResult(deleted=n)

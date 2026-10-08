@@ -8,33 +8,30 @@ def _history_path() -> str:
 def _is_under_uploads(p: str) -> bool:
     up = os.path.abspath(settings.UPLOAD_DIR)
     ap = os.path.abspath(p)
-    return ap.startswith(up)
+    return ap == up or ap.startswith(up + os.sep)
 
-def _safe_unlink(p: str) -> None:
-    try:
-        if p and os.path.exists(p) and _is_under_uploads(p):
-            os.remove(p)
-    except Exception as e:
-        print(f"[history] unlink warn: {p} -> {e}")
+def _unlink(p: Optional[str]) -> None:
+    if not p or not os.path.exists(p):
+        return
+    if not _is_under_uploads(p):
+        return
+    os.remove(p)
 
 def _paths_from_entry(entry: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
-    orig_from_filename = os.path.join(settings.UPLOAD_DIR, entry.get("filename", "")) if entry.get("filename") else None
+    orig = None
+    if entry.get("filename"):
+        orig = os.path.join(settings.UPLOAD_DIR, entry["filename"])
 
+    ann = None
     ann_url = entry.get("annotated_url")
-    ann_path = None
-    if ann_url and isinstance(ann_url, str) and ann_url.startswith("/static/"):
-        rel = ann_url[len("/static/"):]  # "annotated/xyz.png" gibi
-        ann_path = os.path.join(settings.UPLOAD_DIR, rel)
-
-    return (orig_from_filename, ann_path)
+    if isinstance(ann_url, str) and ann_url.startswith("/static/"):
+        ann = os.path.join(settings.UPLOAD_DIR, ann_url[len("/static/"):])
+    return orig, ann
 
 def append_history(entry: Dict[str, Any]) -> None:
-    try:
-        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
-        with open(_history_path(), "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    except Exception as e:
-        print(f"[history] warning: {e}")
+    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+    with open(_history_path(), "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 def list_history(limit: int = 20) -> List[Dict[str, Any]]:
     p = _history_path()
@@ -55,7 +52,7 @@ def get_history_by_id(hid: str) -> Optional[Dict[str, Any]]:
                 continue
             try:
                 obj = json.loads(l)
-            except Exception:
+            except json.JSONDecodeError:
                 continue
             if obj.get("id") == hid:
                 return obj
@@ -66,33 +63,29 @@ def delete_history_item(hid: str) -> Optional[Dict[str, Any]]:
     if not os.path.exists(p):
         return None
 
-    deleted: Optional[Dict[str, Any]] = None
+    deleted = None
     with open(p, "r", encoding="utf-8") as f:
         lines = [l for l in f if l.strip()]
     items = []
     for l in lines:
         try:
             obj = json.loads(l)
-        except Exception:
+        except json.JSONDecodeError:
             continue
         if obj.get("id") == hid and deleted is None:
             deleted = obj
-            orig_p, ann_p = _paths_from_entry(obj)
-            _safe_unlink(orig_p or "")
-            _safe_unlink(ann_p or "")
+            orig, ann = _paths_from_entry(obj)
+            _unlink(orig)
+            _unlink(ann)
             continue
         items.append(obj)
 
     if deleted is None:
         return None
 
-    try:
-        with open(p, "w", encoding="utf-8") as f:
-            for obj in items:
-                f.write(json.dumps(obj, ensure_ascii=False) + "\n")
-    except Exception as e:
-        print(f"[history] rewrite warn: {e}")
-
+    with open(p, "w", encoding="utf-8") as f:
+        for obj in items:
+            f.write(json.dumps(obj, ensure_ascii=False) + "\n")
     return deleted
 
 def clear_history() -> int:
@@ -101,25 +94,17 @@ def clear_history() -> int:
         return 0
 
     count = 0
-    try:
-        with open(p, "r", encoding="utf-8") as f:
-            for l in f:
-                if not l.strip():
-                    continue
-                try:
-                    obj = json.loads(l)
-                except Exception:
-                    continue
-                orig_p, ann_p = _paths_from_entry(obj)
-                _safe_unlink(orig_p or "")
-                _safe_unlink(ann_p or "")
-                count += 1
-    except Exception as e:
-        print(f"[history] clear warn: {e}")
-
-    try:
-        os.remove(p)
-    except Exception as e:
-        print(f"[history] remove history.jsonl warn: {e}")
-
+    with open(p, "r", encoding="utf-8") as f:
+        for l in f:
+            if not l.strip():
+                continue
+            try:
+                obj = json.loads(l)
+            except json.JSONDecodeError:
+                continue
+            orig, ann = _paths_from_entry(obj)
+            _unlink(orig)
+            _unlink(ann)
+            count += 1
+    os.remove(p)
     return count
