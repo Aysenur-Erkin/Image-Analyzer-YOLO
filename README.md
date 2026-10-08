@@ -1,151 +1,108 @@
 # Image Analyzer (FastAPI + React + YOLO/Contour)
 
-## What is Image Analyzer?
-Upload a picture and get an instant result with boxes drawn around the detected objects. You also see simple stats for each box and you can revisit or delete past uploads in History.
+Upload a picture and get boxes around the detected objects, plus a few stats for each box. Past uploads stay in History, where you can open or delete them.
 
-### What do Frontend & Backend do?
+Frontend is a React page: upload, pick Auto / YOLO / Contour, change confidence and max detections, then look at the result. Backend is FastAPI. It stores the file, runs detection, draws the boxes and serves the history API.
 
-- Frontend (React): clean UI to upload images, choose detector (Auto / YOLO / Contour), adjust confidence & max detections, view results and history.
-
-- Backend (FastAPI): receives the image, runs detection, computes stats, draws boxes, saves files, and exposes simple APIs for analysis and history.
-
-### How are objects detected?
-
-- YOLO: a neural network trained on many labeled images that proposes boxes with names (e.g., “cat”) and confidence scores.
-
-- Contour: classic computer vision that finds prominent shapes by edges/contrast; fast and works without large models (great fallback in Auto mode).
+YOLO is a model trained on labeled images. It returns a name and a confidence for each box. Contour is plain OpenCV: edges and shapes, no weights. Auto tries YOLO first and falls back to contour if that fails.
 
 ![Image Analyzer UI](Image_Analyzer_UI.png)
 
----
+## Run it
 
-## ⚙️ Installation
-
-> You can run with **Docker** or **locally**. Pick one.
-
-### Option A — Docker
+Docker:
 
 ```bash
 docker compose up --build
-# Backend:  http://localhost:8000/docs
-# Frontend: http://localhost:3000
 ```
 
-> Don’t commit model weights. Use `.env` → `MODEL_WEIGHTS=yolov8n.pt` (or point to your own file).
+Backend docs: http://localhost:8000/docs  
+Frontend: http://localhost:3000
 
-### Option B — Local setup
+Do not commit model weights. In `.env` set `MODEL_WEIGHTS=yolov8n.pt`, or point it at your own file.
 
-**Backend**
+Without Docker, backend:
+
 ```bash
 cd Backend
 python -m venv .venv
 pip install -r requirements.txt
-copy .env.example .env  
+copy .env.example .env
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-**Frontend**
+Frontend, from `Frontend/`:
+
 ```bash
-cd Frontend
 npm install
 npm run dev
-# open http://localhost:3000
 ```
 
----
+Open http://localhost:3000.
 
-## 🚀 Usage (UI)
+## Usage
 
-1. **Upload** an image (drag & drop or file picker).  
-2. Choose **Detector** (Auto / YOLO / Contour), tweak **Confidence** / **Max detections** if needed.  
-3. Click **Analyze** → annotated image appears on the right, **detections** listed below.  
-4. Open **History** to view recent uploads, **Preview** or **Delete** items.
+Upload an image, pick a detector, tweak confidence or max detections if you want, then Analyze. The annotated image shows on the right and the detections are listed under it. History is the same list later: preview or delete.
 
----
+## API
 
-## 🔌 API Endpoints (Backend)
+Swagger is at http://localhost:8000/docs.
 
-Swagger UI: **http://localhost:8000/docs**
+`POST /api/v1/analyze`  
+Query: `detector=auto|yolo|contour`, `conf`, `max_dets`  
+Body: multipart form with `file`  
+Returns detections, `annotated_url` and `history_id`.
 
-- `POST /api/v1/analyze`
-  - Query: `detector=auto|yolo|contour`, `conf`, `max_dets`
-  - Body: `multipart/form-data` with `file` (image)
-  - Returns: detections + `annotated_url` + `history_id`
+History:
 
-- History
-  - `GET    /api/v1/history`
-  - `GET    /api/v1/history/{id}`
-  - `DELETE /api/v1/history/{id}`
-  - `DELETE /api/v1/history`
+- `GET /api/v1/history`
+- `GET /api/v1/history/{id}`
+- `DELETE /api/v1/history/{id}`
+- `DELETE /api/v1/history`
 
-- Debug
-  - `GET /api/v1/debug/version`
-  - `GET /api/v1/debug/config`
+## Project structure
 
-- Diagnostics
-  - `POST /api/v1/analyze_smoke`  (save only)
-  - `POST /api/v1/analyze_min`    (contour‑only)
-
----
-
-## 🗂️ Project Structure
-
-```plaintext
+```
 Image-Analyzer-YOLO/
 ├── Backend/
 │   ├── app/
-│   │   ├── api/
-│   │   │   └── v1/ (endpoints.py, schemas.py)
-│   │   ├── core/ (config.py)
-│   │   ├── models/ (detection.py)
-│   │   ├── services/ (inference.py, analytics.py)
-│   │   └── utils/ (storage.py, visualize.py, history.py)
+│   │   ├── api/v1/          endpoints.py, schemas.py
+│   │   ├── core/            config.py
+│   │   ├── models/          detection.py
+│   │   ├── services/        inference.py, analytics.py
+│   │   └── utils/           storage.py, visualize.py, history.py
 │   ├── tests/
 │   ├── Dockerfile
 │   ├── requirements.txt
-│   └── uploads/               
+│   └── uploads/
 ├── Frontend/
 │   ├── src/
-│   │   ├── App.jsx
-│   │   ├── index.jsx
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   └── styles/
-│   │       └── global.css
 │   ├── index.html
 │   ├── package.json
-│   ├── package-lock.json
-│   └── vite.config.js                 
-├── docker-compose.yml        
+│   └── vite.config.js
+├── docker-compose.yml
 ├── README.md
 └── LICENSE
 ```
 
----
-
-## 🔧 Configuration
+## Configuration
 
 `Backend/.env`
 
-```env
+```
 UPLOAD_DIR=uploads
 CORS_ORIGINS=["http://localhost:3000"]
-DETECTOR=auto             
+DETECTOR=auto
 MODEL_WEIGHTS=yolov8n.pt
 SECRET_KEY=change-me
 ```
----
 
-## 🧰 Troubleshooting
+## If something fails
 
-- **500 errors?** Try `analyze_smoke` (checks saving) then `analyze_min` (Contour path).
-- **CORS issues?** Ensure `.env` → `CORS_ORIGINS=["http://localhost:3000"]`.
-- **Endpoints missing in /docs?** Check `include_router` and server reload.
-- **YOLO/Torch missing?** Set `DETECTOR=contour` (Auto will fallback anyway).
-
----
+CORS errors usually mean `CORS_ORIGINS` does not include `http://localhost:3000`.  
+If `/docs` is missing routes, check that `include_router` is still in `main.py` and that uvicorn reloaded.  
+No torch or no weights: set `DETECTOR=contour`. Auto already falls back when YOLO cannot start.
 
 ## License
 
-This project is released under the MIT License. See [LICENSE](LICENSE) for details.
-
+MIT. See [LICENSE](LICENSE).
