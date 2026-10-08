@@ -21,7 +21,7 @@ def test_analyze_flow():
 
     data = response.json()
     assert "message" in data
-    assert data["message"] == "Analysis complete"
+    assert data["message"] == "analysis_complete"
     assert isinstance(data["objects"], list)
 
     assert data["objects"] == []
