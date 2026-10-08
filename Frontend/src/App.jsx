@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  BASE,
   analyzeImage,
   fetchHistory,
   deleteHistoryItem,
@@ -25,14 +26,15 @@ export default function App() {
   const [clearing, setClearing] = useState(false);
 
   const dropRef = useRef(null);
-  const backendBase = useMemo(() => "http://localhost:8000", []);
 
   useEffect(() => {
     (async () => {
       try {
         const h = await fetchHistory(20);
         setHistory(h.items || []);
-      } catch {}
+      } catch (e) {
+        setErr(e.message || "History failed");
+      }
     })();
   }, []);
 
@@ -70,14 +72,12 @@ export default function App() {
     setInfo("");
     try {
       const data = await analyzeImage(file, conf, maxDets, detector);
-      const full = data.annotated_url ? backendBase + data.annotated_url : null;
+      const full = data.annotated_url ? BASE + data.annotated_url : null;
       setImgUrl(full);
       setObjects(data.objects || []);
 
-      try {
-        const h = await fetchHistory(20);
-        setHistory(h.items || []);
-      } catch {}
+      const h = await fetchHistory(20);
+      setHistory(h.items || []);
     } catch (e) {
       setErr(e.message || "Analyze failed");
       setImgUrl(null);
@@ -148,7 +148,7 @@ export default function App() {
 
       <main className="container">
         <section className="card">
-          <h2 className="card__title">1) Upload & configure</h2>
+          <h2 className="card__title">Upload</h2>
 
           <form onSubmit={onSubmit} className="controls">
             <div className="controls__row">
@@ -231,7 +231,7 @@ export default function App() {
 
         <section className="grid">
           <div className="card">
-            <h2 className="card__title">2) Preview</h2>
+            <h2 className="card__title">Preview</h2>
             {!previewUrl ? (
               <p className="muted">No image selected yet.</p>
             ) : (
@@ -240,19 +240,17 @@ export default function App() {
           </div>
 
           <div className="card">
-            <h2 className="card__title">3) Annotated output</h2>
+            <h2 className="card__title">Annotated</h2>
             {!imgUrl ? (
               <p className="muted">No analysis result yet.</p>
             ) : (
-              <>
-                <img src={imgUrl} alt="annotated" className="image" />
-              </>
+              <img src={imgUrl} alt="annotated" className="image" />
             )}
           </div>
         </section>
 
         <section className="card">
-          <h2 className="card__title">4) Detections</h2>
+          <h2 className="card__title">Detections</h2>
           <p className="muted">Total: {objects.length}</p>
 
           {objects.length === 0 ? (
@@ -284,7 +282,7 @@ export default function App() {
             className="card__title"
             style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
           >
-            <span>5) Recent uploads</span>
+            <span>Recent uploads</span>
             <div className="actions">
               <button className="btn" onClick={onRefreshHistory}>
                 Refresh
@@ -305,14 +303,14 @@ export default function App() {
             <div className="history">
               {history.map((it) => {
                 const hrefPath = it.annotated_url || it.original_url || null;
-                const fullHref = hrefPath ? backendBase + hrefPath : "#";
+                const fullHref = hrefPath ? BASE + hrefPath : "#";
                 const isBusy = busyId === it.id;
 
                 return (
                   <div key={it.id} className="history__item">
                     <a className="history__thumb" href={fullHref} target="_blank" rel="noreferrer">
                       {hrefPath ? (
-                        <img src={backendBase + hrefPath} alt={it.filename} />
+                        <img src={BASE + hrefPath} alt={it.filename} />
                       ) : (
                         <div className="history__placeholder">no image</div>
                       )}

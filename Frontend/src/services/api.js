@@ -1,4 +1,4 @@
-const BASE = "http://localhost:8000";
+export const BASE = "http://localhost:8000";
 
 export async function analyzeImage(file, conf = 0.25, maxDets = 100, detector = null) {
   const form = new FormData();
@@ -25,11 +25,13 @@ export async function fetchHistory(limit = 20) {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
 export async function deleteHistoryItem(id) {
   const res = await fetch(`${BASE}/api/v1/history/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
 export async function clearHistory() {
   const res = await fetch(`${BASE}/api/v1/history`, { method: "DELETE" });
   if (!res.ok) throw new Error(await res.text());
